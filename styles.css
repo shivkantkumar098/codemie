@@ -9,7 +9,7 @@ body {
   font-family: Arial, sans-serif;
 }
 
-.wrapper {
+wrapper {
   width: min(92%, 46rem);
   margin: 2rem auto;
 }
@@ -43,6 +43,49 @@ h2 {
   font-size: 1.25rem;
 }
 
+/* AG-10: Transaction type filter */
+.transaction-filter {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+.transaction-filter legend {
+  padding: 0;
+  font-weight: 600;
+  color: #5c6678;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Make the radio group look like a segmented control while keeping it accessible */
+.filter-options {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #bac4d5;
+  border-radius: 0.4rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Visual focus indicator for keyboard users */
+.filter-option:has(input:focus-visible) {
+  outline: 2px solid rgba(49, 92, 168, 0.2);
+  outline-offset: 2px;
+}
+
+.filter-option input {
+  accent-color: #315ca8;
+}
+
 .balance-card {
   background: #263f72;
   color: #fff;
@@ -73,7 +116,7 @@ h2 {
   gap: 0.4rem;
 }
 
-.field label {
+/* FIuld label {
   font-weight: 600;
 }
 
@@ -117,6 +160,7 @@ h2 {
   font-weight: 600;
 }
 
+/* During disabled */
 .submit:disabled {
   cursor: not-allowed;
   opacity: 0.6;
@@ -150,6 +194,7 @@ h2 {
   font-size: 0.9rem;
 }
 
+/* Transaction list */
 .transaction-list {
   display: grid;
   gap: 0.75rem;
@@ -161,6 +206,7 @@ h2 {
   border-radius: 0.5rem;
 }
 
+/* Item header */
 .transaction-heading {
   display: flex;
   justify-content: space-between;
