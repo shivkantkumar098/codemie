@@ -30,6 +30,7 @@ class FakeElement {
     this.className = "";
     this.textContent = "";
     this.value = "";
+    this.checked = false;
     this.disabled = false;
     this.hidden = false;
     this.classList = {
@@ -49,12 +50,13 @@ class FakeElement {
     this.listeners[name] = callback;
   }
 
-  dispatch(name) {
+  dispatch(name, options = {}) {
     const event = {
       prevented: false,
       preventDefault() {
         this.prevented = true;
       },
+      ...options,
     };
     this.listeners[name]?.(event);
     return event;
@@ -129,6 +131,11 @@ const createApp = (storage = createStorage()) => {
     "amount-error",
     "type-error",
     "date-error",
+    // AG-10 filter controls
+    "transaction-type-filter",
+    "filter-all",
+    "filter-income",
+    "filter-expenses",
   ];
   const elements = Object.fromEntries(ids.map((id) => [id, new FakeElement()]));
   Object.entries(elements).forEach(([id, element]) => {
@@ -136,6 +143,20 @@ const createApp = (storage = createStorage()) => {
   });
   elements["transaction-form"].elementsById = elements;
   elements["transaction-type"].value = "Expense";
+
+  // Simulate the radio inputs from index.html for AG-10 filter tests
+  elements["filter-all"].tagName = "input";
+  elements["filter-all"].name = "txn-filter";
+  elements["filter-all"].value = "ALL";
+  elements["filter-all"].checked = true;
+
+  elements["filter-income"].tagName = "input";
+  elements["filter-income"].name = "txn-filter";
+  elements["filter-income"].value = "INCOME";
+
+  elements["filter-expenses"].tagName = "input";
+  elements["filter-expenses"].name = "txn-filter";
+  elements["filter-expenses"].value = "EXPENSES";
 
   let nextId = 1;
   const window = {
@@ -170,6 +191,12 @@ const createApp = (storage = createStorage()) => {
 const transactionsFrom = (storage) =>
   JSON.parse(storage.values.get("transactions")).transactions;
 
+const clickFilter = (elements, filterId) => {
+  const radio = elements[filterId];
+  radio.checked = true;
+  elements["transaction-type-filter"].dispatch("change", { target: radio });
+};
+
 test("integration: index.html exposes every required app control and local asset", () => {
   for (const id of [
     "transaction-date",
@@ -188,6 +215,11 @@ test("integration: index.html exposes every required app control and local asset
     "amount-error",
     "type-error",
     "date-error",
+    // AG-10 filter controls
+    "transaction-type-filter",
+    "filter-all",
+    "filter-income",
+    "filter-expenses",
   ]) {
     assert.match(htmlSource, new RegExp(`\\bid="${id}"`), `missing #${id}`);
   }
@@ -395,6 +427,89 @@ test("integration: markup-like notes are rendered as literal text", () => {
   const history = elements["transaction-history"];
   assert.equal(collectText(history).includes(noteValue), true);
   assert.equal(collectTagNames(history).includes("img"), false);
+});
+
+// --- AG-10 filter integration tests ---
+
+test("integration: transaction type filter control exists and defaults to All", () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  assert.ok(elements["transaction-type-filter"], "missing #transaction-type-filter");
+  assert.equal(elements["filter-all"].checked, true);
+  assert.equal(elements["filter-income"].checked, false);
+  assert.equal(elements["filter-expenses"].checked, false);
+});
+
+test('integration: selecting Income shows only transactions with type "Money Received"', () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  // Add income transaction
+  elements["transaction-amount"].value = "100.50";
+  elements["transaction-type"].value = "Money Received";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  // Add expense transaction
+  elements["transaction-amount"].value = "12.34";
+  elements["transaction-type"].value = "Expense";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  // Apply filter
+  clickFilter(elements, "filter-income");
+
+  const historyText = collectText(elements["transaction-history"]);
+  assert.equal(historyText.includes("Money Received"), true);
+  assert.equal(historyText.includes("Expense"), false);
+});
+
+test('integration: selecting Expenses shows only transactions with type "Expense"', () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  // Add income transaction
+  elements["transaction-amount"].value = "100.50";
+  elements["transaction-type"].value = "Money Received";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  // Add expense transaction
+  elements["transaction-amount"].value = "12.34";
+  elements["transaction-type"].value = "Expense";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  // Apply filter
+  clickFilter(elements, "filter-expenses");
+
+  const historyText = collectText(elements["transaction-history"]);
+  assert.equal(historyText.includes("Expense"), true);
+  assert.equal(historyText.includes("Money Received"), false);
+});
+
+test("integration: empty state shows when there are transactions but none match selected filter", () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  // Add only income transaction
+  elements["transaction-amount"].value = "25.00";
+  elements["transaction-type"].value = "Money Received";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  // Confirm normal state (non-empty list => empty-state hidden)
+  assert.equal(elements["empty-state"].hidden, true);
+
+  // Switch to Expenses -> should show filter-specific empty state text
+  clickFilter(elements, "filter-expenses");
+  assert.equal(elements["empty-state"].hidden, false);
+  assert.match(elements["empty-state"].textContent, /no expense transactions/i);
+
+  // And list should not show the income transaction while filtered
+  const historyText = collectText(elements["transaction-history"]);
+  assert.equal(historyText.includes("Money Received"), false);
 });
 
 test("integration: failed save preserves form, state, and no-success feedback", () => {
