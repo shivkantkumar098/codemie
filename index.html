@@ -7,13 +7,13 @@
       name="description"
       content="Record money received and expenses, and keep track of your available balance."
     />
-    <title>Vidyarthi Khataa — Transactions</title>
+    <title>Vidyarthi Khaaa — Transactions</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="wrapper">
       <header class="page-header">
-        <h1>Vidyarthi Khataa</h1>
+        <h1>Vidyarthi Khaata</h1>
         <p>Keep track of money received and expenses.</p>
       </header>
 
@@ -93,6 +93,40 @@
 
       <section class="history-card" aria-labelledby="history-heading">
         <h2 id="history-heading">Transaction history</h2>
+        <fieldset id="transaction-type-filter" class="transaction-filter">
+          <legend>Filter</legend>
+          <div class="filter-options" role="radiogroup" aria-label="Filter transactions by type">
+            <label class="filter-option" for="filter-all">
+              <input
+                type="radio"
+                name="txn-filter"
+                id="filter-all"
+                value="ALL"
+                checked
+              />
+              <span>All</span>
+            </label>
+          <label class="filter-option" for="filter-income">
+            <input
+              type="radio"
+              name="txn-filter"
+              id="filter-income"
+              value="INCOME"
+            />
+            <span>Income</span>
+          </label>
+          <label class="filter-option" for="filter-expenses">
+            <input
+                type="radio"
+              name="txn-filter"
+               id="filter-expenses"
+               value="EXPENSES"
+              />
+            <span>Expenses</span>
+          </label>
+        </div>
+      </fieldset>
+
         <p id="load-error" class="load-error hide" role="alert"></p>
         <button class="retry-load hide" id="retry-load" type="button">
           Retry loading transactions
