@@ -291,6 +291,31 @@ let repositoryReady = false;
 let isSaving = false;
 let isLoading = false;
 
+// AG-10: Transaction type filter state
+const TRANSACTION_TYPE_FILTERS = {
+  ALL: "ALL",
+  INCOME: "INCOME",
+  EXPENSES: "EXPENSES",
+};
+
+let selectedTypeFilter = TRANSACTION_TYPE_FILTERS.ALL;
+
+const filterTransactions = (allTransactions, filter) => {
+  if (!Array.isArray(allTransactions) || allTransactions.length === 0) {
+    return [];
+  }
+
+  switch (filter) {
+    case TRANSACTION_TYPE_FILTERS.INCOME:
+      return allTransactions.filter((t) => t.type === "Money Received");
+    case TRANSACTION_TYPE_FILTERS.EXPENSES:
+      return allTransactions.filter((t) => t.type === "Expense");
+    case TRANSACTION_TYPE_FILTERS.ALL:
+    default:
+      return allTransactions;
+  }
+};
+
 const showElement = (element, visible) => {
   if (element) {
     element.classList.toggle("hide", !visible);
@@ -384,17 +409,34 @@ const createTransactionElement = (transaction) => {
   return item;
 };
 
-const renderTransactions = (nextTransactions, balanceInPaise) => {
+const renderTransactions = (allTransactions, balanceInPaise) => {
+  const visibleTransactions = filterTransactions(allTransactions, selectedTypeFilter);
+
   const list = document.createElement("div");
   list.className = "transaction-list";
-  nextTransactions.forEach((transaction) => {
+  visibleTransactions.forEach((transaction) => {
     list.append(createTransactionElement(transaction));
   });
 
   transactionHistory.replaceChildren(list);
   balanceAmount.textContent = formatINR(balanceInPaise);
   balanceAmount.hidden = false;
-  emptyState.hidden = nextTransactions.length !== 0;
+
+  // Empty state handling:
+  // - If there are no total transactions, preserve existing empty state copy.
+  // - If there are transactions but none match, show a filter-specific empty message.
+  if (allTransactions.length === 0) {
+    emptyState.textContent = "No transactions yet.";
+    emptyState.hidden = false;
+  } else if (visibleTransactions.length === 0) {
+    emptyState.textContent =
+      selectedTypeFilter === TRANSACTION_TYPE_FILTERS.INCOME
+        ? "No income transactions found."
+        : "No expense transactions found.";
+    emptyState.hidden = false;
+  } else {
+    emptyState.hidden = true;
+  }
 };
 
 const renderLoadFailure = (error) => {
@@ -445,6 +487,29 @@ const clearSubmissionFeedback = () => {
   saveStatus.textContent = "";
   showElement(saveStatus, false);
 };
+
+// AG-10: Wire filter control
+const filterContainer = document.getElementById("transaction-type-filter");
+if (filterContainer) {
+  filterContainer.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!target || target.name !== "txn-filter") {
+      return;
+    }
+
+    const next = target.value;
+    if (!Object.values(TRANSACTION_TYPE_FILTERS).includes(next)) {
+      return;
+    }
+
+    selectedTypeFilter = next;
+    try {
+      renderTransactions(transactions, calculateAvailableBalance(transactions));
+    } catch (error) {
+      // Non-fatal: leave UI as-is
+    }
+  });
+}
 
 if (transactionForm) {
   transactionForm.addEventListener("submit", (event) => {
