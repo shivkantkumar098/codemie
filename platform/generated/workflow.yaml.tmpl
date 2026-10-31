@@ -31,7 +31,7 @@ states:
   assistant_id: stage-2
   task: |
     Execute SDLC Stage 2 (Architecture Design) for the Jira issue named in the user's input.
-    The human has approved Stage 1 (Requirements Analysis). Use its requirements.md from the conversation context as your input.
+    The human has approved Stage 1 (Requirements Analysis). First save requirements.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce architecture.md, present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -41,7 +41,7 @@ states:
   assistant_id: stage-3
   task: |
     Execute SDLC Stage 3 (Design Review) for the Jira issue named in the user's input.
-    The human has approved Stage 2 (Architecture Design). Use its architecture.md from the conversation context as your input.
+    The human has approved Stage 2 (Architecture Design). First save architecture.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce design-review.md, present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -51,7 +51,7 @@ states:
   assistant_id: stage-4
   task: |
     Execute SDLC Stage 4 (Implementation Planning) for the Jira issue named in the user's input.
-    The human has approved Stage 3 (Design Review). Use its design-review.md from the conversation context as your input.
+    The human has approved Stage 3 (Design Review). First save design-review.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce impl-plan.md, present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -61,7 +61,7 @@ states:
   assistant_id: stage-5
   task: |
     Execute SDLC Stage 5 (Implementation) for the Jira issue named in the user's input.
-    The human has approved Stage 4 (Implementation Planning). Use its impl-plan.md from the conversation context as your input.
+    The human has approved Stage 4 (Implementation Planning). First save impl-plan.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce implementation-notes.md, present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -71,7 +71,7 @@ states:
   assistant_id: stage-6
   task: |
     Execute SDLC Stage 6 (Code Review) for the Jira issue named in the user's input.
-    The human has approved Stage 5 (Implementation). Use its implementation-notes.md from the conversation context as your input.
+    The human has approved Stage 5 (Implementation). First save implementation-notes.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce code-review.md, present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -81,7 +81,7 @@ states:
   assistant_id: stage-7
   task: |
     Execute SDLC Stage 7 (Verification) for the Jira issue named in the user's input.
-    The human has approved Stage 6 (Code Review). Use its code-review.md from the conversation context as your input.
+    The human has approved Stage 6 (Code Review). First save code-review.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce verification-report.md, present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -91,8 +91,17 @@ states:
   assistant_id: stage-8
   task: |
     Execute SDLC Stage 8 (Pull Request Preparation) for the Jira issue named in the user's input.
-    The human has approved Stage 7 (Verification). Use its verification-report.md from the conversation context as your input.
+    The human has approved Stage 7 (Verification). First save verification-report.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit (SAVE FIRST rule), then use it from the conversation context as your input.
     Produce pr-summary.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-9-save
+- id: stage-9-save
+  assistant_id: stage-8
+  task: |
+    The human has approved Stage 8 (Pull Request Preparation). Save pr-summary.md to .codemie/AgentOutput/<JIRA_ISSUE_KEY>/ on branch feature/<JIRA_ISSUE_KEY> with the Git toolkit, unchanged from the conversation context.
+    Do not push elsewhere, open a PR, or merge. Report the real result and stop.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
   next:
