@@ -418,7 +418,9 @@ const renderTransactions = (allTransactions, balanceInPaise) => {
     list.append(createTransactionElement(transaction));
   });
 
-  transactionHistory.replaceChildren(list);
+  // Keep the empty-state element in the DOM by rendering it inside the history container.
+  transactionHistory.replaceChildren(emptyState, list);
+
   balanceAmount.textContent = formatINR(balanceInPaise);
   balanceAmount.hidden = false;
 
