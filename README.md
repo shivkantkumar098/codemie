@@ -31,7 +31,7 @@ Requirements -> Architecture -> Design Review -> Implementation Planning -> Impl
 
 ## Platform limitations (be upfront in the demo)
 - Platform assistants have no local shell: the Verification assistant can only use `code_executor`; real `node --test` runs happen in Track A.
-- Artifacts are returned in chat and committed to `.codemie/AgentOutput/<KEY>/` via the Git toolkit only after explicit authorization.
+- Artifacts are returned in chat; approving a workflow gate makes the next state commit the approved artifact to `.codemie/AgentOutput/<KEY>/` on `feature/<KEY>` via the Git toolkit (a final `stage-9-save` state saves `pr-summary.md`). Only that file is committed; PR creation and merge stay separate.
 - The Claude hook (`sdlc-policy.cjs`) applies to Track A only; on the platform the guard is the prompts, the `interrupt_before` gates, and the absence of any merge tool.
 
 ## Open items
