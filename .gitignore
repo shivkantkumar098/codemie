@@ -1,0 +1,25 @@
+# Secrets and local credentials - never commit
+.mcp.json
+**/mcp.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+*.token
+secrets/
+credentials*.json
+.codemie/settings.local.json
+
+# Dependencies and local noise
+node_modules/
+*.log
+*.bak
+.DS_Store
+
+
+# Local session transcripts
+chat.txt

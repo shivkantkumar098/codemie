@@ -1,0 +1,202 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f3f6fb;
+  color: #243047;
+  font-family: Arial, sans-serif;
+}
+
+.wrapper {
+  width: min(92%, 46rem);
+  margin: 2rem auto;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0 0 0.4rem;
+  color: #263f72;
+}
+
+.page-header p {
+  margin: 0;
+  color: #5c6678;
+}
+
+.balance-card,
+.transaction-form-card,
+.history-card {
+  margin-bottom: 1.25rem;
+  padding: 1.4rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 0.4rem 1.2rem rgba(28, 48, 83, 0.08);
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.balance-card {
+  background: #263f72;
+  color: #fff;
+}
+
+.balance-card h2 {
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.balance-value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+#transaction-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #bac4d5;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #315ca8;
+  outline: 2px solid rgba(49, 92, 168, 0.2);
+}
+
+.field-error,
+.form-error {
+  margin: 0;
+  color: #a32232;
+  font-size: 0.9rem;
+}
+
+.form-error {
+  grid-column: 1 / -1;
+}
+
+.submit {
+  justify-self: start;
+  padding: 0.7rem 1.2rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: #315ca8;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+}
+
+.submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#empty-state {
+  margin: 0;
+  color: #5c6678;
+}
+
+.load-error {
+  margin: 0 0 0.75rem;
+  color: #a32232;
+}
+
+.retry-load {
+  margin-bottom: 1rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #315ca8;
+  border-radius: 0.4rem;
+  background: #fff;
+  color: #315ca8;
+  font: inherit;
+  font-weight: 600;
+}
+
+.form-success {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #23643a;
+  font-size: 0.9rem;
+}
+
+.transaction-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.transaction-item {
+  padding: 0.9rem 1rem;
+  border: 1px solid #e0e6ef;
+  border-radius: 0.5rem;
+}
+
+.transaction-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}
+
+.transaction-meta,
+.transaction-note {
+  margin: 0;
+  color: #5c6678;
+}
+
+.transaction-note {
+  margin-top: 0.4rem;
+  overflow-wrap: anywhere;
+}
+
+.hide {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .wrapper {
+    width: min(94%, 46rem);
+    margin: 1rem auto;
+  }
+
+  #transaction-form {
+    grid-template-columns: 1fr;
+  }
+
+  .balance-card,
+  .transaction-form-card,
+  .history-card {
+    padding: 1.1rem;
+  }
+}

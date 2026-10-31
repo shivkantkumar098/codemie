@@ -1,0 +1,99 @@
+custom_nodes: []
+tools: []
+assistants:
+- id: stage-1
+  assistant_id: "{{ASSISTANT_ID_1}}"
+- id: stage-2
+  assistant_id: "{{ASSISTANT_ID_2}}"
+- id: stage-3
+  assistant_id: "{{ASSISTANT_ID_3}}"
+- id: stage-4
+  assistant_id: "{{ASSISTANT_ID_4}}"
+- id: stage-5
+  assistant_id: "{{ASSISTANT_ID_5}}"
+- id: stage-6
+  assistant_id: "{{ASSISTANT_ID_6}}"
+- id: stage-7
+  assistant_id: "{{ASSISTANT_ID_7}}"
+- id: stage-8
+  assistant_id: "{{ASSISTANT_ID_8}}"
+states:
+- id: stage-1
+  assistant_id: stage-1
+  task: |
+    Execute SDLC Stage 1 (Requirements Analysis) for the Jira issue named in the user's input.
+    Confirm the issue key and title with the Jira toolkit first.
+    Produce requirements.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-2
+- id: stage-2
+  assistant_id: stage-2
+  task: |
+    Execute SDLC Stage 2 (Architecture Design) for the Jira issue named in the user's input.
+    The human has approved Stage 1 (Requirements Analysis). Use its requirements.md from the conversation context as your input.
+    Produce architecture.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-3
+- id: stage-3
+  assistant_id: stage-3
+  task: |
+    Execute SDLC Stage 3 (Design Review) for the Jira issue named in the user's input.
+    The human has approved Stage 2 (Architecture Design). Use its architecture.md from the conversation context as your input.
+    Produce design-review.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-4
+- id: stage-4
+  assistant_id: stage-4
+  task: |
+    Execute SDLC Stage 4 (Implementation Planning) for the Jira issue named in the user's input.
+    The human has approved Stage 3 (Design Review). Use its design-review.md from the conversation context as your input.
+    Produce impl-plan.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-5
+- id: stage-5
+  assistant_id: stage-5
+  task: |
+    Execute SDLC Stage 5 (Implementation) for the Jira issue named in the user's input.
+    The human has approved Stage 4 (Implementation Planning). Use its impl-plan.md from the conversation context as your input.
+    Produce implementation-notes.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-6
+- id: stage-6
+  assistant_id: stage-6
+  task: |
+    Execute SDLC Stage 6 (Code Review) for the Jira issue named in the user's input.
+    The human has approved Stage 5 (Implementation). Use its implementation-notes.md from the conversation context as your input.
+    Produce code-review.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-7
+- id: stage-7
+  assistant_id: stage-7
+  task: |
+    Execute SDLC Stage 7 (Verification) for the Jira issue named in the user's input.
+    The human has approved Stage 6 (Code Review). Use its code-review.md from the conversation context as your input.
+    Produce verification-report.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-8
+- id: stage-8
+  assistant_id: stage-8
+  task: |
+    Execute SDLC Stage 8 (Pull Request Preparation) for the Jira issue named in the user's input.
+    The human has approved Stage 7 (Verification). Use its verification-report.md from the conversation context as your input.
+    Produce pr-summary.md, present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: end

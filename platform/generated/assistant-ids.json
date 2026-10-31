@@ -1,0 +1,11 @@
+{
+  "CM-SDLC 1 Requirement Analyst": "319a5987-5f05-4215-b50d-2dcc94af6068",
+  "CM-SDLC 2 Architecture Agent": "1526fb58-3df0-4c39-8851-9a44f0361705",
+  "CM-SDLC 3 Design Review Agent": "bd8e1d73-420f-42e7-9495-120eb334a53a",
+  "CM-SDLC 4 Implementation Planner": "6eeed1ac-1902-43bd-848a-5be49cf03581",
+  "CM-SDLC 5 Implementation Agent": "94c5d5ee-be97-4911-8d96-ca3702bd94bc",
+  "CM-SDLC 6 Code Review Agent": "5c2b987d-7a6a-4f6f-a520-d86b62c47c31",
+  "CM-SDLC 7 Verification Agent": "f8f423bf-bd49-4f58-b811-0b3c46130ae7",
+  "CM-SDLC 8 PR Agent": "67482c7f-ae48-4f36-bec5-e53c2b291422",
+  "CM-SDLC 0 Orchestrator": "7adeeedb-5511-43be-955b-a3bc688a1c4f"
+}

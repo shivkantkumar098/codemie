@@ -1,0 +1,5 @@
+{
+  "name": "sdlc",
+  "version": "1.0.0",
+  "description": "Jira-driven, human-approved eight-stage Agentic SDLC (agents, skills, policy hook)."
+}
