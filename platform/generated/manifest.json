@@ -3,54 +3,54 @@
     "n": 0,
     "name": "CM-SDLC 0 Orchestrator",
     "file": "0-orchestrator.json",
-    "chars": 3136
+    "chars": 3303
   },
   {
     "n": 1,
     "name": "CM-SDLC 1 Requirement Analyst",
     "file": "1-requirement-analyst.json",
-    "chars": 6720
+    "chars": 6161
   },
   {
     "n": 2,
     "name": "CM-SDLC 2 Architecture Agent",
     "file": "2-architecture-agent.json",
-    "chars": 6833
+    "chars": 6129
   },
   {
     "n": 3,
     "name": "CM-SDLC 3 Design Review Agent",
     "file": "3-design-review-agent.json",
-    "chars": 6092
+    "chars": 5472
   },
   {
     "n": 4,
     "name": "CM-SDLC 4 Implementation Planner",
     "file": "4-implementation-planner.json",
-    "chars": 6231
+    "chars": 5733
   },
   {
     "n": 5,
     "name": "CM-SDLC 5 Implementation Agent",
     "file": "5-implementation-agent.json",
-    "chars": 6353
+    "chars": 5768
   },
   {
     "n": 6,
     "name": "CM-SDLC 6 Code Review Agent",
     "file": "6-code-review-agent.json",
-    "chars": 7066
+    "chars": 6556
   },
   {
     "n": 7,
     "name": "CM-SDLC 7 Verification Agent",
     "file": "7-verification-agent.json",
-    "chars": 9263
+    "chars": 8746
   },
   {
     "n": 8,
     "name": "CM-SDLC 8 PR Agent",
     "file": "8-pr-agent.json",
-    "chars": 10623
+    "chars": 10098
   }
 ]
