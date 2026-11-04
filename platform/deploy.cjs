@@ -119,11 +119,22 @@ function findByName(kind, name) {
 
 function assistants() {
   const catalog = cliJson(["sdk", "assistants", "get-tools"]);
+  // Git/VCS toolkits need explicit credentials; auto lookup left them unbound (tools silently not exposed).
+  const gitInt = cliJson(["sdk", "integrations", "list", "--setting-type", "user", "--search", GIT_ALIAS]).find((i) => i.alias === GIT_ALIAS);
+  if (!gitInt) throw new Error(`Integration '${GIT_ALIAS}' not found; run: node platform/deploy.cjs integrations <env-file>`);
+  const bindGit = (tks) =>
+    tks.map((tk) =>
+      tk.toolkit === "Git"
+        ? { ...tk, settings: { id: gitInt.id, project_name: PROJECT, credential_type: "Git" } }
+        : tk.toolkit === "VCS"
+          ? { ...tk, tools: tk.tools.map((t) => ({ ...t, settings: { id: gitInt.id, project_name: PROJECT, credential_type: "Git" } })) }
+          : tk,
+    );
   const files = fs.readdirSync(path.join(GEN, "assistants")).sort();
   const ids = {};
   const upsert = (def, extra = {}) => {
     const { sub_assistants, ...rest } = def;
-    const payload = { ...rest, ...extra, project: PROJECT, toolkits: expandToolkits(def.toolkits, catalog), skip_integration_validation: true };
+    const payload = { ...rest, ...extra, project: PROJECT, toolkits: bindGit(expandToolkits(def.toolkits, catalog)), skip_integration_validation: true };
     const existing = findByName("assistants", def.name);
     withTempJson(payload, (f) => (existing ? cli(["sdk", "assistants", "update", existing.id, "--json", f]) : cli(["sdk", "assistants", "create", "--json", f])));
     const id = (existing || findByName("assistants", def.name))?.id;
