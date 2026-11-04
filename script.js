@@ -3,6 +3,48 @@ const TRANSACTION_SCHEMA_VERSION = 1;
 const TRANSACTION_TYPES = ["Expense", "Money Received"];
 const AMOUNT_PATTERN = /^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/;
 
+const FILTER_OPTIONS = {
+  ALL: "ALL",
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE",
+};
+
+const normalizeTxnType = (rawType) => {
+  if (typeof rawType !== "string") {
+    return "unknown";
+  }
+
+  const normalized = rawType.trim().toLowerCase();
+  if (normalized === "money received") {
+    return "income";
+  }
+  if (normalized === "expense") {
+    return "expense";
+  }
+
+  return "unknown";
+};
+
+const applyFilter = (allTransactions, activeFilter) => {
+  if (!Array.isArray(allTransactions)) {
+    return [];
+  }
+
+  switch (activeFilter) {
+    case FILTER_OPTIONS.INCOME:
+      return allTransactions.filter(
+        (transaction) => normalizeTxnType(transaction?.type) === "income",
+      );
+    case FILTER_OPTIONS.EXPENSE:
+      return allTransactions.filter(
+        (transaction) => normalizeTxnType(transaction?.type) === "expense",
+      );
+    case FILTER_OPTIONS.ALL:
+    default:
+      return allTransactions;
+  }
+};
+
 const parseAmountToPaise = (value) => {
   const normalizedValue = String(value).trim();
   if (!AMOUNT_PATTERN.test(normalizedValue)) {
@@ -275,6 +317,7 @@ const formError = document.getElementById("form-error");
 const saveStatus = document.getElementById("save-status");
 const loadError = document.getElementById("load-error");
 const retryLoadButton = document.getElementById("retry-load");
+const transactionFilter = document.getElementById("transaction-filter");
 const fieldErrorElements = {
   amount: document.getElementById("amount-error"),
   type: document.getElementById("type-error"),
@@ -290,6 +333,7 @@ let transactions = [];
 let repositoryReady = false;
 let isSaving = false;
 let isLoading = false;
+let activeFilter = FILTER_OPTIONS.ALL;
 
 const showElement = (element, visible) => {
   if (element) {
@@ -384,17 +428,47 @@ const createTransactionElement = (transaction) => {
   return item;
 };
 
-const renderTransactions = (nextTransactions, balanceInPaise) => {
+const getEmptyStateMessage = (totalCount, filteredCount, filter) => {
+  if (totalCount === 0) {
+    return "No transactions yet.";
+  }
+
+  if (filteredCount !== 0) {
+    return "";
+  }
+
+  switch (filter) {
+    case FILTER_OPTIONS.INCOME:
+      return "No income transactions found.";
+    case FILTER_OPTIONS.EXPENSE:
+      return "No expense transactions found.";
+    case FILTER_OPTIONS.ALL:
+    default:
+      return "No transactions yet.";
+  }
+};
+
+const renderTransactions = (allTransactions, balanceInPaise) => {
+  const filteredTransactions = applyFilter(allTransactions, activeFilter);
   const list = document.createElement("div");
   list.className = "transaction-list";
-  nextTransactions.forEach((transaction) => {
+  filteredTransactions.forEach((transaction) => {
     list.append(createTransactionElement(transaction));
   });
 
   transactionHistory.replaceChildren(list);
   balanceAmount.textContent = formatINR(balanceInPaise);
   balanceAmount.hidden = false;
-  emptyState.hidden = nextTransactions.length !== 0;
+
+  const emptyMessage = getEmptyStateMessage(
+    allTransactions.length,
+    filteredTransactions.length,
+    activeFilter,
+  );
+  if (emptyMessage) {
+    emptyState.textContent = emptyMessage;
+  }
+  emptyState.hidden = filteredTransactions.length !== 0;
 };
 
 const renderLoadFailure = (error) => {
@@ -445,6 +519,23 @@ const clearSubmissionFeedback = () => {
   saveStatus.textContent = "";
   showElement(saveStatus, false);
 };
+
+if (transactionFilter) {
+  transactionFilter.value = activeFilter;
+  transactionFilter.addEventListener("change", (event) => {
+    const nextFilter = String(event.target.value);
+    activeFilter = Object.values(FILTER_OPTIONS).includes(nextFilter)
+      ? nextFilter
+      : FILTER_OPTIONS.ALL;
+
+    try {
+      const balance = calculateAvailableBalance(transactions);
+      renderTransactions(transactions, balance);
+    } catch (error) {
+      // Ignore re-render failures.
+    }
+  });
+}
 
 if (transactionForm) {
   transactionForm.addEventListener("submit", (event) => {
