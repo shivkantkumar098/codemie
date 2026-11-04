@@ -62,7 +62,7 @@ states:
   task: |
     Execute SDLC Stage 5 (Implementation) for the Jira issue named in the user's input.
     The human has approved Stage 4 (Implementation Planning). Use impl-plan.md as presented earlier in the conversation context (chat history) as your input. Do not save it to a file.
-    Implement the approved plan yourself and commit it to branch <RUN_BRANCH> with the Git toolkit (see the AUTOMATION rule).
+    Implement the approved plan yourself and commit it to branch <RUN_BRANCH> with the GitHub API tool (see the AUTOMATION rule).
     Produce implementation-notes.md as chat output only (no file), present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -83,7 +83,7 @@ states:
   task: |
     Execute SDLC Stage 7 (Verification) for the Jira issue named in the user's input.
     The human has approved Stage 6 (Code Review). Use code-review.md as presented earlier in the conversation context (chat history) as your input. Do not save it to a file.
-    Run the project's tests yourself with code_executor against branch <RUN_BRANCH> (see the AUTOMATION rule); do not ask the user to run them.
+    Verify branch <RUN_BRANCH> by evidence (see the AUTOMATION rule); the sandbox cannot run tests, so mark test execution NOT-RUN unless real CI or user output exists.
     Produce verification-report.md as chat output only (no file), present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true

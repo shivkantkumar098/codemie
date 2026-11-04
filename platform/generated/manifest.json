@@ -3,13 +3,13 @@
     "n": 0,
     "name": "CM-SDLC 0 Orchestrator",
     "file": "0-orchestrator.json",
-    "chars": 4448
+    "chars": 4474
   },
   {
     "n": 1,
     "name": "CM-SDLC 1 Requirement Analyst",
     "file": "1-requirement-analyst.json",
-    "chars": 7402
+    "chars": 8317
   },
   {
     "n": 2,
@@ -33,7 +33,7 @@
     "n": 5,
     "name": "CM-SDLC 5 Implementation Agent",
     "file": "5-implementation-agent.json",
-    "chars": 7133
+    "chars": 8080
   },
   {
     "n": 6,
@@ -45,12 +45,12 @@
     "n": 7,
     "name": "CM-SDLC 7 Verification Agent",
     "file": "7-verification-agent.json",
-    "chars": 9622
+    "chars": 10348
   },
   {
     "n": 8,
     "name": "CM-SDLC 8 PR Agent",
     "file": "8-pr-agent.json",
-    "chars": 11564
+    "chars": 12295
   }
 ]
