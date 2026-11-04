@@ -22,7 +22,7 @@ states:
   assistant_id: stage-1
   task: |
     Execute SDLC Stage 1 (Requirements Analysis) for the Jira issue named in the user's input.
-    Confirm the issue key and title with the Jira toolkit first.
+    Confirm the issue key and title with the Jira toolkit first, then run the PREFLIGHT and create the run branch (see the AUTOMATION rule) and record RUN_BRANCH.
     Produce requirements.md as chat output only (no file), present it with open questions and assumptions, and stop. Do not start any other stage.
   resolve_dynamic_values_in_prompt: true
   next:
@@ -62,6 +62,7 @@ states:
   task: |
     Execute SDLC Stage 5 (Implementation) for the Jira issue named in the user's input.
     The human has approved Stage 4 (Implementation Planning). Use impl-plan.md as presented earlier in the conversation context (chat history) as your input. Do not save it to a file.
+    Implement the approved plan yourself and commit it to branch <RUN_BRANCH> with the Git toolkit (see the AUTOMATION rule).
     Produce implementation-notes.md as chat output only (no file), present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -82,6 +83,7 @@ states:
   task: |
     Execute SDLC Stage 7 (Verification) for the Jira issue named in the user's input.
     The human has approved Stage 6 (Code Review). Use code-review.md as presented earlier in the conversation context (chat history) as your input. Do not save it to a file.
+    Run the project's tests yourself with code_executor against branch <RUN_BRANCH> (see the AUTOMATION rule); do not ask the user to run them.
     Produce verification-report.md as chat output only (no file), present it with open questions and assumptions, and stop. Do not start any other stage.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
@@ -93,6 +95,15 @@ states:
     Execute SDLC Stage 8 (Pull Request Preparation) for the Jira issue named in the user's input.
     The human has approved Stage 7 (Verification). Use verification-report.md as presented earlier in the conversation context (chat history) as your input. Do not save it to a file.
     Produce pr-summary.md as chat output only (no file), present it with open questions and assumptions, and stop. Do not start any other stage.
+  interrupt_before: true
+  resolve_dynamic_values_in_prompt: true
+  next:
+    state_id: stage-9-open-pr
+- id: stage-9-open-pr
+  assistant_id: stage-8
+  task: |
+    The human has approved the Stage 8 PR summary. Open the pull request now (PR creation step of the AUTOMATION rule): head <RUN_BRANCH>, base main, body = the approved PR summary from the conversation context.
+    Never merge. Report the real PR URL or the exact tool error, then stop.
   interrupt_before: true
   resolve_dynamic_values_in_prompt: true
   next:
