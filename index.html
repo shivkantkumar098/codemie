@@ -93,6 +93,19 @@
 
       <section class="history-card" aria-labelledby="history-heading">
         <h2 id="history-heading">Transaction history</h2>
+        <div class="history-header">
+          <div class="history-filter">
+            <label for="transaction-filter">Filter</label>
+            <select id="transaction-filter" name="transaction-filter">
+              <option value="ALL" selected>All</option>
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expenses</option>
+            </select>
+          </div>
+          <p class="history-hint" id="balance-scope-hint">
+            Balance shown is total for all transactions.
+          </p>
+        </div>
         <p id="load-error" class="load-error hide" role="alert"></p>
         <button class="retry-load hide" id="retry-load" type="button">
           Retry loading transactions
