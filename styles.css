@@ -200,3 +200,43 @@ h2 {
     padding: 1.1rem;
   }
 }
+
+.history-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.history-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.history-filter label {
+  font-weight: 600;
+}
+
+.history-filter select {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #bac4d5;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
+.history-filter select:focus {
+  border-color: #315ca8;
+  outline: 2px solid rgba(49, 92, 168, 0.2);
+}
+
+.history-hint {
+  margin: 0;
+  color: #5c6678;
+  font-size: 0.9rem;
+}
