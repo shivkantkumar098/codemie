@@ -14,7 +14,7 @@ const htmlSource = fs.readFileSync(
 );
 
 const collectText = (element) =>
-  `${element.textContent}${element.children.map(collectText).join("")}`;
+  String(element.textContent) + element.children.map(collectText).join("");
 
 const collectTagNames = (element) => [
   element.tagName,
@@ -129,6 +129,9 @@ const createApp = (storage = createStorage()) => {
     "amount-error",
     "type-error",
     "date-error",
+    "filter-all",
+    "filter-income",
+    "filter-expenses",
   ];
   const elements = Object.fromEntries(ids.map((id) => [id, new FakeElement()]));
   Object.entries(elements).forEach(([id, element]) => {
@@ -136,12 +139,13 @@ const createApp = (storage = createStorage()) => {
   });
   elements["transaction-form"].elementsById = elements;
   elements["transaction-type"].value = "Expense";
+  elements["empty-state"].textContent = "No transactions yet. Add one to get started.";
 
   let nextId = 1;
   const window = {
     localStorage: storage,
     crypto: {
-      randomUUID: () => `test-${nextId++}`,
+      randomUUID: () => "test-" + nextId++,
     },
   };
   const document = {
@@ -150,16 +154,17 @@ const createApp = (storage = createStorage()) => {
   };
   const context = vm.createContext({ window, document, console });
   vm.runInContext(
-    `${appSource}\n;globalThis.__appTest = {
-      parseAmountToPaise,
-      formatINR,
-      calculateAvailableBalance,
-      getLocalDateString,
-      formatTransactionDate,
-      isValidTransactionDate,
-      validateTransaction,
-      transactionRepository
-    };`,
+    appSource +
+      "\n;globalThis.__appTest = {\n" +
+      "  parseAmountToPaise,\n" +
+      "  formatINR,\n" +
+      "  calculateAvailableBalance,\n" +
+      "  getLocalDateString,\n" +
+      "  formatTransactionDate,\n" +
+      "  isValidTransactionDate,\n" +
+      "  validateTransaction,\n" +
+      "  transactionRepository\n" +
+      "};",
     context,
     { filename: "script.js" },
   );
@@ -188,8 +193,11 @@ test("integration: index.html exposes every required app control and local asset
     "amount-error",
     "type-error",
     "date-error",
+    "filter-all",
+    "filter-income",
+    "filter-expenses",
   ]) {
-    assert.match(htmlSource, new RegExp(`\\bid="${id}"`), `missing #${id}`);
+    assert.match(htmlSource, new RegExp("\\bid=\"" + id + "\""), "missing #" + id);
   }
 
   assert.match(htmlSource, /<form\b[^>]*id="transaction-form"/);
@@ -197,6 +205,19 @@ test("integration: index.html exposes every required app control and local asset
   assert.match(htmlSource, /<link\b[^>]*href="styles\.css"/);
   assert.match(htmlSource, /<script\b[^>]*src="script\.js"/);
   assert.doesNotMatch(htmlSource, /id="(?:budget|expense-title|edit|delete)[^"]*"/i);
+});
+
+test("integration: filter buttons exist and default to All active on load", () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  assert.ok(elements["filter-all"]);
+  assert.ok(elements["filter-income"]);
+  assert.ok(elements["filter-expenses"]);
+
+  assert.equal(elements["filter-all"].attributes["aria-pressed"], "true");
+  assert.equal(elements["filter-income"].attributes["aria-pressed"], "false");
+  assert.equal(elements["filter-expenses"].attributes["aria-pressed"], "false");
 });
 
 test("unit: amount parsing accepts positive INR cents and rejects invalid precision", () => {
@@ -207,7 +228,7 @@ test("unit: amount parsing accepts positive INR cents and rejects invalid precis
   assert.equal(parseAmountToPaise("12.30"), 1230);
   assert.equal(parseAmountToPaise(".5"), 50);
   for (const invalid of ["", "0", "-1", "abc", "1.234", "90071992547409.92"]) {
-    assert.equal(parseAmountToPaise(invalid), null, `expected ${invalid} to reject`);
+    assert.equal(parseAmountToPaise(invalid), null, "expected " + invalid + " to reject");
   }
 });
 
@@ -459,4 +480,93 @@ test("integration: unsafe legacy value blocks migration without altering source 
   assert.equal(storage.values.has("transactions"), false);
   assert.equal(storage.values.get("expenses"), expenses);
   assert.equal(storage.values.get("budget"), "800");
+});
+
+test("integration: clicking Income/Expenses filters rendering and keeps balance", () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  elements["transaction-amount"].value = "100.50";
+  elements["transaction-type"].value = "Money Received";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  elements["transaction-amount"].value = "12.34";
+  elements["transaction-type"].value = "Expense";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  const overallBalance = elements["balance-amount"].textContent;
+
+  elements["filter-income"].dispatch("click");
+  assert.equal(elements["filter-income"].attributes["aria-pressed"], "true");
+  assert.equal(elements["balance-amount"].textContent, overallBalance);
+  let history = collectText(elements["transaction-history"]);
+  assert.equal(history.includes("Money Received"), true);
+  assert.equal(history.includes("Expense"), false);
+
+  elements["filter-expenses"].dispatch("click");
+  assert.equal(elements["filter-expenses"].attributes["aria-pressed"], "true");
+  assert.equal(elements["balance-amount"].textContent, overallBalance);
+  history = collectText(elements["transaction-history"]);
+  assert.equal(history.includes("Expense"), true);
+  assert.equal(history.includes("Money Received"), false);
+});
+
+test("integration: empty-state message changes when no transactions match filter", () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  elements["transaction-amount"].value = "10";
+  elements["transaction-type"].value = "Expense";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  elements["filter-income"].dispatch("click");
+
+  assert.equal(elements["empty-state"].hidden, false);
+  assert.equal(elements["empty-state"].textContent, "No matching transactions found");
+});
+
+test("integration: adding a transaction respects the current filter", () => {
+  const storage = createStorage();
+  const { elements } = createApp(storage);
+
+  elements["filter-income"].dispatch("click");
+
+  elements["transaction-amount"].value = "10";
+  elements["transaction-type"].value = "Expense";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  assert.equal(elements["empty-state"].hidden, false);
+  assert.equal(elements["empty-state"].textContent, "No matching transactions found");
+
+  elements["transaction-amount"].value = "50";
+  elements["transaction-type"].value = "Money Received";
+  elements["transaction-date"].value = "2026-10-14";
+  elements["transaction-form"].dispatch("submit");
+
+  assert.equal(elements["empty-state"].hidden, true);
+  const history = collectText(elements["transaction-history"]);
+  assert.equal(history.includes("Money Received"), true);
+  assert.equal(history.includes("Expense"), false);
+});
+
+test("integration: reload resets filter to All", () => {
+  const storage = createStorage();
+  let app = createApp(storage);
+
+  app.elements["transaction-amount"].value = "20";
+  app.elements["transaction-type"].value = "Money Received";
+  app.elements["transaction-date"].value = "2026-10-14";
+  app.elements["transaction-form"].dispatch("submit");
+
+  app.elements["filter-income"].dispatch("click");
+  assert.equal(app.elements["filter-income"].attributes["aria-pressed"], "true");
+
+  app = createApp(storage);
+  assert.equal(app.elements["filter-all"].attributes["aria-pressed"], "true");
+  assert.equal(app.elements["filter-income"].attributes["aria-pressed"], "false");
+  assert.equal(app.elements["filter-expenses"].attributes["aria-pressed"], "false");
 });
