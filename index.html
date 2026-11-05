@@ -7,13 +7,13 @@
       name="description"
       content="Record money received and expenses, and keep track of your available balance."
     />
-    <title>Vidyarthi Khataa — Transactions</title>
+    <title>Vidyarthi Khaata — Transactions</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="wrapper">
       <header class="page-header">
-        <h1>Vidyarthi Khataa</h1>
+        <h1>Vidyarthi Khaata</h1>
         <p>Keep track of money received and expenses.</p>
       </header>
 
@@ -24,7 +24,7 @@
           id="balance-amount"
           aria-live="polite"
           hidden
-        >₹0.00</p>
+        >₫0.00</p>
       </section>
 
       <section class="transaction-form-card" aria-labelledby="form-heading">
@@ -93,6 +93,36 @@
 
       <section class="history-card" aria-labelledby="history-heading">
         <h2 id="history-heading">Transaction history</h2>
+        <div
+          class="transaction-filter"
+          role="group"
+          aria-label="Filter transactions"
+        >
+          <button
+            class="filter-option"
+            id="filter-all"
+            type="button"
+            aria-pressed="true"
+          >
+            All
+          </button>
+          <button
+            class="filter-option"
+            id="filter-income"
+            type="button"
+            aria-pressed="false"
+          >
+            Income
+          </button>
+          <button
+            class="filter-option"
+            id="filter-expenses"
+            type="button"
+            aria-pressed="false"
+          >
+            Expenses
+          </button>
+        </div>
         <p id="load-error" class="load-error hide" role="alert"></p>
         <button class="retry-load hide" id="retry-load" type="button">
           Retry loading transactions
