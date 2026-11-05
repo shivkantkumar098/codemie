@@ -3,6 +3,14 @@ const TRANSACTION_SCHEMA_VERSION = 1;
 const TRANSACTION_TYPES = ["Expense", "Money Received"];
 const AMOUNT_PATTERN = /^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/;
 
+const FILTER_TO_TYPES = {
+  all: null,
+  income: ["Money Received"],
+  expenses: ["Expense"],
+};
+
+let currentFilter = "all";
+
 const parseAmountToPaise = (value) => {
   const normalizedValue = String(value).trim();
   if (!AMOUNT_PATTERN.test(normalizedValue)) {
@@ -33,7 +41,7 @@ const formatINR = (amountInPaise) => {
     maximumFractionDigits: 0,
   }).format(rupees);
 
-  return `${negative ? "-" : ""}${formattedRupees}.${paise}`;
+  return (negative ? "-" : "") + formattedRupees + "." + paise;
 };
 
 const calculateAvailableBalance = (transactions) =>
@@ -56,7 +64,7 @@ const getLocalDateString = (date = new Date()) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
+  return year + "-" + month + "-" + day;
 };
 
 const formatTransactionDate = (dateString) => {
@@ -64,7 +72,7 @@ const formatTransactionDate = (dateString) => {
     throw new TypeError("The transaction date is invalid.");
   }
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
-  return `${match[3]}/${match[2]}/${match[1]}`;
+  return match[3] + "/" + match[2] + "/" + match[1];
 };
 
 const isValidTransactionDate = (value) => {
@@ -173,12 +181,12 @@ const readLegacyExpenses = (storage) => {
       amountInPaise === null
     ) {
       throw new Error(
-        `Saved legacy expense ${index + 1} is invalid. No data was changed.`,
+        "Saved legacy expense " + (index + 1) + " is invalid. No data was changed.",
       );
     }
 
     return {
-      id: `legacy-${index}`,
+      id: "legacy-" + index,
       type: "Expense",
       amountInPaise,
       date: migrationDate,
@@ -275,6 +283,11 @@ const formError = document.getElementById("form-error");
 const saveStatus = document.getElementById("save-status");
 const loadError = document.getElementById("load-error");
 const retryLoadButton = document.getElementById("retry-load");
+
+const filterAllButton = document.getElementById("filter-all");
+const filterIncomeButton = document.getElementById("filter-income");
+const filterExpensesButton = document.getElementById("filter-expenses");
+
 const fieldErrorElements = {
   amount: document.getElementById("amount-error"),
   type: document.getElementById("type-error"),
@@ -345,7 +358,7 @@ const createTransactionId = (existingTransactions) => {
       throw new Error("Secure transaction IDs are unavailable in this browser.");
     }
 
-    const transactionId = `transaction-${id}`;
+    const transactionId = "transaction-" + id;
     if (!existingIds.has(transactionId)) {
       return transactionId;
     }
@@ -384,7 +397,52 @@ const createTransactionElement = (transaction) => {
   return item;
 };
 
-const renderTransactions = (nextTransactions, balanceInPaise) => {
+const getFilteredTransactions = (allTransactions, filter) => {
+  const filterKey = filter in FILTER_TO_TYPES ? filter : "all";
+  const types = FILTER_TO_TYPES[filterKey];
+  if (!types) {
+    return allTransactions;
+  }
+  return allTransactions.filter((transaction) => types.includes(transaction.type));
+};
+
+const updateFilterUI = (filter) => {
+  const nextFilter = filter in FILTER_TO_TYPES ? filter : "all";
+  const entries = [
+    [filterAllButton, "all"],
+    [filterIncomeButton, "income"],
+    [filterExpensesButton, "expenses"],
+  ];
+  for (const [button, key] of entries) {
+    if (!button) {
+      continue;
+    }
+    const isActive = key === nextFilter;
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    button.classList.toggle("is-active", isActive);
+  }
+};
+
+const updateEmptyStateMessage = (totalCount, filteredCount) => {
+  if (!emptyState) {
+    return;
+  }
+
+  if (totalCount === 0) {
+    emptyState.hidden = false;
+    return;
+  }
+
+  if (filteredCount === 0) {
+    emptyState.textContent = "No matching transactions found";
+    emptyState.hidden = false;
+    return;
+  }
+
+  emptyState.hidden = true;
+};
+
+const renderTransactions = (nextTransactions, balanceInPaise, totalTransactionsCount) => {
   const list = document.createElement("div");
   list.className = "transaction-list";
   nextTransactions.forEach((transaction) => {
@@ -394,7 +452,8 @@ const renderTransactions = (nextTransactions, balanceInPaise) => {
   transactionHistory.replaceChildren(list);
   balanceAmount.textContent = formatINR(balanceInPaise);
   balanceAmount.hidden = false;
-  emptyState.hidden = nextTransactions.length !== 0;
+
+  updateEmptyStateMessage(totalTransactionsCount, nextTransactions.length);
 };
 
 const renderLoadFailure = (error) => {
@@ -405,10 +464,21 @@ const renderLoadFailure = (error) => {
   transactionHistory.replaceChildren();
   loadError.textContent =
     error instanceof Error
-      ? `${error.message} No empty history is being shown.`
+      ? error.message + " No empty history is being shown."
       : "Transactions could not be loaded. No empty history is being shown.";
   showElement(loadError, true);
   showElement(retryLoadButton, true);
+};
+
+const renderApp = () => {
+  if (!repositoryReady || isLoading) {
+    return;
+  }
+
+  const filteredTransactions = getFilteredTransactions(transactions, currentFilter);
+  const balanceInPaise = calculateAvailableBalance(transactions);
+  updateFilterUI(currentFilter);
+  renderTransactions(filteredTransactions, balanceInPaise, transactions.length);
 };
 
 const loadTransactions = () => {
@@ -420,13 +490,14 @@ const loadTransactions = () => {
   retryLoadButton.disabled = true;
   try {
     const loadedTransactions = transactionRepository.load();
-    const loadedBalance = calculateAvailableBalance(loadedTransactions);
-    renderTransactions(loadedTransactions, loadedBalance);
     transactions = loadedTransactions;
+    currentFilter = "all";
     repositoryReady = true;
     saveButton.disabled = false;
     showElement(loadError, false);
     showElement(retryLoadButton, false);
+
+    renderApp();
   } catch (error) {
     renderLoadFailure(error);
   } finally {
@@ -445,6 +516,21 @@ const clearSubmissionFeedback = () => {
   saveStatus.textContent = "";
   showElement(saveStatus, false);
 };
+
+const setFilter = (filter) => {
+  currentFilter = filter in FILTER_TO_TYPES ? filter : "all";
+  renderApp();
+};
+
+if (filterAllButton) {
+  filterAllButton.addEventListener("click", () => setFilter("all"));
+}
+if (filterIncomeButton) {
+  filterIncomeButton.addEventListener("click", () => setFilter("income"));
+}
+if (filterExpensesButton) {
+  filterExpensesButton.addEventListener("click", () => setFilter("expenses"));
+}
 
 if (transactionForm) {
   transactionForm.addEventListener("submit", (event) => {
@@ -470,7 +556,6 @@ if (transactionForm) {
     const note = transactionNoteInput.value.trim();
     let transaction;
     let updatedTransactions;
-    let updatedBalance;
     try {
       transaction = {
         id: createTransactionId(transactions),
@@ -480,7 +565,7 @@ if (transactionForm) {
         ...(note ? { note } : {}),
       };
       updatedTransactions = [...transactions, transaction];
-      updatedBalance = calculateAvailableBalance(updatedTransactions);
+      calculateAvailableBalance(updatedTransactions);
     } catch (error) {
       setFormError(
         error instanceof Error
@@ -508,7 +593,7 @@ if (transactionForm) {
       transactionForm.reset();
       transactionDateInput.value = getLocalDateString();
       try {
-        renderTransactions(transactions, updatedBalance);
+        renderApp();
         saveStatus.textContent = "Transaction added.";
         showElement(saveStatus, true);
       } catch (error) {
