@@ -127,6 +127,38 @@ h2 {
   color: #5c6678;
 }
 
+/* History filter controls */
+.history-card .transaction-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  border: 1px solid #e0e6ef;
+  border-radius: 0.5rem;
+  background: #f8faff;
+}
+
+.history-card .transaction-filter .filter-option {
+  border: 0;
+  background: transparent;
+  color: #243047;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.35rem;
+  font: inherit;
+  font-weight: 600;
+}
+
+.history-card .transaction-filter .filter-option:focus-visible {
+  outline: 2px solid rgba(49, 92, 168, 0.2);
+  outline-offset: 2px;
+}
+
+.history-card .transaction-filter .filter-option.is-active {
+  background: #315ca8;
+  color: #fff;
+}
+
 .load-error {
   margin: 0 0 0.75rem;
   color: #a32232;
